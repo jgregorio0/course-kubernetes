@@ -78,6 +78,10 @@ kubectl version --client
 kubectl config current-context
 ```
 
+# Kubernetes Course
+
+- [kubernetes-bootcamp-kubernetes-from-zero-to-cloud](https://sngular.udemy.com/course/kubernetes-bootcamp-kubernetes-from-zero-to-cloud) 
+
 ## Introduction
 
 - Master node: controls and manages the green Worker nodes
