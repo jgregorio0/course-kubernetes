@@ -96,12 +96,14 @@ kubectl config current-context
 
 ## Section 1: create a Pod
 
-- [Pod configuration file](section-one/grade-submission-portal-pod.yml)
+- [Pod configuration file](section-1/grade-submission-portal-pod.yml)
 
 - Create or update a Pod
 
 ```
 kubectl apply -f grade-submission-portal-pod.yml
+
+kubectl apply -f grade-submission-api-pod.yml
 ```
 
 - Check Pods
@@ -129,3 +131,16 @@ kubectl logs -f grade-submission-portal -c grade-submission-portal-health-checke
 kubectl port-forward grade-submission-portal 8080:5001
 ```
 
+## Section 2: Accessing Pods
+
+[Service NodePort](section-2/grade-submission-portal-service.yml)
+
+- Expose static port 32000
+
+```
+kubectl apply -f grade-submission-portal-pod.yml
+
+kubectl apply -f grade-submission-api-pod.yml
+
+kubectl apply -f grade-submission-portal-service.yml
+```
