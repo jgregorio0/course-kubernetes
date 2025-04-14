@@ -98,7 +98,7 @@ kubectl config current-context
 
 - Resource requirements: define the minimum CPU and memory needed by a pod to run properly
 
-## Section 1: create a Pod
+## Section 1: Pod
 
 - [Pod configuration file](01-section-1-pod/grade-submission-portal-pod.yml)
 
@@ -136,7 +136,7 @@ kubectl logs -f grade-submission-portal -c grade-submission-portal-health-checke
 kubectl port-forward grade-submission-portal 8080:5001
 ```
 
-## Section 2: Accessing Pods
+## Section 2: Service
 
 [Service NodePort](02-section-2-service/grade-submission-portal-service.yml)
 
@@ -170,6 +170,36 @@ kubectl apply -f grade-submission-api-service.yml
 ```
 
 - Access <minikube ip>:32000:
+
 ```
 minikube service grade-submission-portal --url
 ```
+
+## Section 3: Namespace
+
+[03-section-3-namespace](03-section-3-namespace)
+
+- Create specific namespace
+
+```
+kubectl create namespace grade-submission
+```
+
+- Apply into namespace
+
+```
+kubectl apply -f ./ -n grade-submission  
+```
+
+- Define a namespace in metadata
+
+```
+namespace: grade-submission
+```
+
+- Get pods and services in namespace
+
+```
+kubectl get pods,services -n grade-submission
+```
+
