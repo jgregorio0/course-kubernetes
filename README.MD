@@ -53,21 +53,25 @@ minikube start --driver=docker
 ```
 
 2. Download checksum
+
 ```
    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl.sha256"
 ```
 
 3. Validate checksum
+
 ```
 echo "$(cat kubectl.sha256)  kubectl" | sha256sum --check
 ```
 
 4. Install Kubernetes
+
 ```
 sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 ```
 
 5. Check version
+
 ```
 kubectl version --client
 ```
@@ -80,7 +84,7 @@ kubectl config current-context
 
 # Kubernetes Course
 
-- [kubernetes-bootcamp-kubernetes-from-zero-to-cloud](https://sngular.udemy.com/course/kubernetes-bootcamp-kubernetes-from-zero-to-cloud) 
+- [kubernetes-bootcamp-kubernetes-from-zero-to-cloud](https://sngular.udemy.com/course/kubernetes-bootcamp-kubernetes-from-zero-to-cloud)
 
 ## Introduction
 
@@ -96,7 +100,7 @@ kubectl config current-context
 
 ## Section 1: create a Pod
 
-- [Pod configuration file](section-1/grade-submission-portal-pod.yml)
+- [Pod configuration file](01-section-1-pod/grade-submission-portal-pod.yml)
 
 - Create or update a Pod
 
@@ -127,20 +131,45 @@ kubectl logs -f grade-submission-portal -c grade-submission-portal-health-checke
 ```
 
 - Enable access fordwarding port
+
 ```
 kubectl port-forward grade-submission-portal 8080:5001
 ```
 
 ## Section 2: Accessing Pods
 
-[Service NodePort](section-2/grade-submission-portal-service.yml)
+[Service NodePort](02-section-2-service/grade-submission-portal-service.yml)
 
 - Expose static port 32000
 
 ```
+apiVersion: v1
+kind: Service
+metadata:
+  name: grade-submission-portal
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/instance: grade-submission-portal
+  ports:
+  - port: 5001
+    targetPort: 5001
+    nodePort: 32000
+```
+
+- Run the sample
+
+```
 kubectl apply -f grade-submission-portal-pod.yml
+
+kubectl apply -f grade-submission-portal-service.yml
 
 kubectl apply -f grade-submission-api-pod.yml
 
-kubectl apply -f grade-submission-portal-service.yml
+kubectl apply -f grade-submission-api-service.yml
+```
+
+- Access <minikube ip>:32000:
+```
+minikube service grade-submission-portal --url
 ```
