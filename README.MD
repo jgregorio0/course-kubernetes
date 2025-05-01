@@ -21,7 +21,7 @@ curl -LO https://github.com/kubernetes/minikube/releases/latest/download/minikub
 2. Install
 
 ```
-sudo install minikube-linux-amd64 /usr/local/bin/minikube 
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
 ```
 
 3. Remove install file
@@ -172,7 +172,7 @@ kubectl apply -f grade-submission-api-service.yml
 - Access <minikube ip>:32000:
 
 ```
-minikube service grade-submission-portal --url
+minikube service grade-submission-portal --url -n grade-submission
 ```
 
 ## Section 3: Namespace
@@ -188,7 +188,7 @@ kubectl create namespace grade-submission
 - Apply into namespace
 
 ```
-kubectl apply -f ./ -n grade-submission  
+kubectl apply -f ./ -n grade-submission
 ```
 
 - Define a namespace in metadata
@@ -203,3 +203,124 @@ namespace: grade-submission
 kubectl get pods,services -n grade-submission
 ```
 
+## Section 4: Rolling Update
+
+When you update the pod template in a Deployment resource, the Deployment controller creates a new ReplicaSet for v2 while preserving the old v1.
+During a rolling update, the Deployment manages two ReplicaSets: v1 and v2.  
+New v2 pods are created while old v1 pods are gradually terminated. This process continues until all pods are running the new version.
+
+- maxUnavailable: The maximum number of pods that can be unavailable during the update.
+- maxSurge: The maximum number of pods that can be created over the desired number of pods.
+  Benefits of Rolling Updates
+
+Benefits:
+
+- Minimal Downtime
+- Version Control
+- Traffic Management
+
+## Section 5: Liveness and readiness
+
+```
+livenessProbe: # Checks container health at /healthz endpoint
+  httpGet:
+    path: /healthz
+    port: 3000
+  initialDelaySeconds: 15 # Waits 15 seconds after container starts before first check
+  periodSeconds: 5 # Performs checks every 5 seconds
+readinessProbe: # Detects if container needs to be restarted
+  httpGet:
+    path: /readyz
+    port: 3000
+  initialDelaySeconds: 30 # Waits 30 seconds before first check
+  periodSeconds: 5 # Performs checks every 5 seconds
+```
+
+## Section 10: Deployments and Pod Replicas
+
+Self-healing:
+
+- Automatically recreates Pods that fail
+- Maintains desired number of replicas
+
+Rolling Updates:
+
+- Updates Pods gradually to prevent downtime
+- Allows easy rollback to previous versions
+- Configurable update strategy
+
+Scalability:
+
+- Scale deployments using kubectl scale
+- Automatic load balancing
+- Flexible resource allocation
+
+Limitations:
+
+- Not suitable for stateful applications
+- Cannot guarantee Pod termination order
+- Limited control over individual Pods
+- Rollback requires manual intervention in some cases
+
+[api deployment](10-section-10-deployments/grade-submission-api-deployment.yml) 
+[portal deployment](10-section-10-deployments/grade-submission-portal-deployment.yml)
+
+```
+kubectl delete services,pods --all -n grade-submission
+
+kubectl apply -f .
+
+kubectl get deployments -n grade-submission
+
+watch -n 5 'kubectl get pod -n grade-submission'
+
+minikube service grade-submission-portal --url -n grade-submission
+```
+
+
+
+## Section 13: StatefulSet and Persistent Volumes
+
+Network identity:
+
+- Each Pod derives its hostname from the StatefulSet name and ordinal
+- Pattern follows $(statefulset-name)-$(ordinal). Example: web-0, web-1, web-2
+
+Storage Management:
+
+- Uses PersistentVolumeClaims for stable storage
+- Volumes persist across Pod recreation
+- Each Pod receives its own PersistentVolumeClaim
+
+Deployment Guarantees:
+
+- Sequential deployment from ordinal 0 to N-1
+- Ordered termination from N-1 to 0
+- Waits for predecessors to be Running and Ready before deploying successors
+
+Limitations:
+
+- Requires manual creation of a Headless Service
+- Storage volumes aren't deleted when StatefulSet is scaled down
+- No guarantees on Pod termination order when deleting StatefulSet
+- Can enter broken states during Rolling Updates requiring manual intervention
+
+- [StatefulSet](13-section-13-stateful-and-persistent-volumes/mongodb/mongodb-statefulset.yml)
+
+```
+kubectl delete deployments,services,pods,statefulsets,pvc --all -n grade-submission
+
+kubectl apply -f .
+
+kubectl get statefulset -n grade-submission
+
+kubectl get pods -n grade-submission
+
+kubectl logs -f mongodb-0 -n grade-submission
+
+kubectl get pvc -n grade-submission
+
+minikube service grade-submission-portal --url -n grade-submission
+
+watch -n 1 'kubectl get pod -n grade-submission'
+```
