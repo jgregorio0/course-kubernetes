@@ -324,3 +324,61 @@ minikube service grade-submission-portal --url -n grade-submission
 
 watch -n 1 'kubectl get pod -n grade-submission'
 ```
+
+## Section 14: ConfigMap and Secret
+
+Manage configuration and sensitive data in your cluster
+
+
+ConfigMap:
+
+ConfigMaps in Kubernetes are used to store non-confidential configuration data in key-value pairs
+
+- data: For UTF-8 strings
+- binaryData: For base64-encoded binary data kubernetes.io
+- Keys must use alphanumeric characters, -, _, or .
+- Names must be valid DNS subdomain names
+
+Secret:
+
+Specifically designed for sensitive information like passwords, OAuth tokens, and SSH keys
+
+- Opaque (default): Arbitrary user-defined data
+- kubernetes.io/service-account-token
+- kubernetes.io/dockerconfigjson
+- kubernetes.io/basic-auth
+- kubernetes.io/ssh-auth
+- kubernetes.io/tls kubernetes.io
+
+
+```
+kubectl apply -f db
+
+kubectl apply -f api
+
+kubectl apply -f portal
+
+watch -n 1 'kubectl get pod -n grade-submission'
+
+minikube service grade-submission-portal --url -n grade-submission
+```
+
+## Section 14: Horizontal autoscaler
+
+Install metrics API
+```
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl patch deployment metrics-server -n kube-system --type="json" -p="[{\"op\": \"add\", \"path\": \"/spec/template/spec/containers/0/args/-\", \"value\":\"--kubelet-insecure-tls\"}]"
+```
+
+Deploy hpa
+```
+kubectl apply -f portal
+
+kubectl get hpa -n grade-submission
+
+kubectl delete hpa grade-submission-portal-hpa
+
+kubectl top pods -n grade-submission
+```
+
